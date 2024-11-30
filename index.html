@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RC Joystick Control</title>
+  <style>
+    .joystick-container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .joystick {
+      width: 200px;
+      height: 200px;
+      border: 2px solid black;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: lightgray;
+    }
+    .joystick input {
+      transform: rotate(-90deg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RC Vehicle Joystick Control</h1>
+
+  <!-- Joystick controls for forward/backward and left/right -->
+  <div class="joystick-container">
+    <div class="joystick">
+      <input type="range" id="joystickX" min="-100" max="100" value="0" step="1" style="transform: rotate(0deg);">
+    </div>
+    <div class="joystick">
+      <input type="range" id="joystickY" min="-100" max="100" value="0" step="1" style="transform: rotate(0deg);">
+    </div>
+  </div>
+
+  <button id="sendButton">Send Data</button>
+
+  <script>
+    const joystickX = document.getElementById('joystickX');
+    const joystickY = document.getElementById('joystickY');
+    const sendButton = document.getElementById('sendButton');
+
+    // Adafruit IO API info
+    const AIO_USERNAME = "tarun665";
+    const AIO_KEY = "aio_ARSL93MWhmnnYcdIfs1ijmku9PRB";
+    const AIO_URL = `https://io.adafruit.com/api/v2/${AIO_USERNAME}/feeds/`;
+
+    // Function to send data to Adafruit IO feed
+    async function sendDataToFeed(feedName, value) {
+      const response = await fetch(`${AIO_URL}${feedName}/data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AIO-Key': AIO_KEY
+        },
+        body: JSON.stringify({ value: value })
+      });
+      const data = await response.json();
+      console.log(`Data sent to ${feedName}: `, data);
+    }
+
+    // Event listener for sending data to feeds when button is clicked
+    sendButton.addEventListener('click', () => {
+      const xValue = joystickX.value;  // Get value for Left/Right joystick
+      const yValue = joystickY.value;  // Get value for Forward/Backward joystick
+
+      // Send joystick values to Adafruit IO feeds
+      sendDataToFeed("left-right", xValue);  
+      sendDataToFeed("forward-backward", yValue);
+
+      console.log(`Sent: Left/Right: ${xValue}, Forward/Backward: ${yValue}`);
+    });
+  </script>
+</body>
+</html>
